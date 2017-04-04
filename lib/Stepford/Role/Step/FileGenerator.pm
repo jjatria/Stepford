@@ -10,7 +10,7 @@ use Carp qw( croak );
 use List::AllUtils qw( any max );
 use Stepford::Types qw( Path );
 
-# Sadly, there's no (sane) way to make Path::Class::File use this
+# Is there a way to make Path::Tiny use this?
 use Time::HiRes 1.9726 qw( stat );
 
 use Moose::Role;
@@ -67,8 +67,8 @@ This role provides the following methods:
 =head2 $step->BUILD
 
 This method adds a wrapper to the BUILD method which checks that all of the
-class's productions are of the C<File> type provided by
-L<MooseX::Types::Path::Class>. The attributes can also be subtypes of this
+class's productions are of the C<Path> type provided by
+L<Types::Path::Tiny>. The attributes can also be subtypes of this
 type.
 
 This check may be changed so that it is done as part of the class definition,
