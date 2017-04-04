@@ -5,7 +5,7 @@ use autodie;
 
 use Log::Dispatch;
 use Log::Dispatch::Array;
-use Path::Class qw( tempdir );
+use Path::Tiny qw( tempdir );
 use Stepford::Runner;
 
 use Test::Fatal;

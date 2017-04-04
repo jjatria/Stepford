@@ -8,7 +8,7 @@ use lib 't/lib';
 use List::AllUtils qw( first );
 use Log::Dispatch;
 use Log::Dispatch::Array;
-use Path::Class qw( dir tempdir );
+use Path::Tiny qw( tempdir );
 use Stepford::Runner;
 use Time::HiRes 1.9726 qw( stat time );
 
@@ -113,7 +113,7 @@ EOF
         'log level for object creation is debug'
     );
 
-    for my $file ( map { $tempdir->file($_) } qw( a1 a2 combined ) ) {
+    for my $file ( map { $tempdir->child($_) } qw( a1 a2 combined ) ) {
         ok( -f $file, $file->basename . ' file exists' );
     }
 
@@ -433,7 +433,7 @@ EOF
 {
     package Test7::Step::A;
 
-    use Stepford::Types qw( File );
+    use Stepford::Types qw( Path );
 
     use Moose;
     with 'Stepford::Role::Step::FileGenerator';
@@ -446,8 +446,8 @@ EOF
     has file => (
         traits  => ['StepProduction'],
         is      => 'ro',
-        isa     => File,
-        default => sub { $tempdir->file('test7-step-a') },
+        isa     => Path,
+        default => sub { $tempdir->child('test7-step-a') },
     );
 
     sub run {
@@ -471,7 +471,7 @@ EOF
     );
 
     is(
-        scalar $tempdir->file('test7-step-a')->slurp,
+        scalar $tempdir->child('test7-step-a')->slurp,
         'new content',
         'config passed to $runner->run is passed to step constructor'
     );

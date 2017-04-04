@@ -4,17 +4,17 @@ use warnings;
 
 use lib 't/lib';
 
-use Path::Class qw( tempdir );
+use Path::Tiny qw( tempdir );
 use Stepford::Runner;
 
 use Test::Fatal;
 use Test::More;
 
 my $tempdir = tempdir( CLEANUP => 1 );
-my $file1 = $tempdir->file('file1');
+my $file1 = $tempdir->child('file1');
 $file1->spew('stuff in the file');
 
-my $file2 = $tempdir->file('file2');
+my $file2 = $tempdir->child('file2');
 
 {
     package Test::Step::A;

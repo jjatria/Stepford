@@ -7,7 +7,6 @@ use namespace::autoclean;
 our $VERSION = '0.004002';
 
 use List::AllUtils qw( all any first_index max none sort_by );
-use Scalar::Util qw( refaddr );
 use Stepford::Error;
 use Stepford::Types qw(
     ArrayRef
@@ -17,6 +16,7 @@ use Stepford::Types qw(
     Maybe
     Num
     Step
+    Graph
 );
 use Try::Tiny qw( catch try );
 
@@ -78,7 +78,7 @@ has _children_graphs => (
     traits   => ['Array'],
     init_arg => 'children_graphs',
     is       => 'ro',
-    isa      => ArrayRef ['Stepford::Graph'],
+    isa      => ArrayRef [Graph],
     required => 1,
 );
 

@@ -4,8 +4,7 @@ use autodie;
 
 use lib 't/lib';
 
-use File::Temp qw( tempdir );
-use Path::Class qw( dir );
+use Path::Tiny qw( tempdir );
 use Stepford::Runner;
 
 use Test::More;
@@ -17,11 +16,11 @@ done_testing();
 sub _test_final_step_dependencies {
     my $jobs = shift;
 
-    my $tempdir = dir( tempdir( CLEANUP => 1 ) );
+    my $tempdir = tempdir( CLEANUP => 1 );
 
     _run_combine_files( $jobs, $tempdir );
 
-    my $combined_file = $tempdir->file('combined');
+    my $combined_file = $tempdir->child('combined');
     my $t1            = $combined_file->stat->mtime;
     my $t2            = $t1 + 1000;
 

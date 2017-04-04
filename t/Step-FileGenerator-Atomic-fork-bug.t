@@ -8,7 +8,7 @@ use IPC::Signal qw( sig_num );
 use Log::Dispatch;
 use Log::Dispatch::Null;
 use Parallel::ForkManager;
-use Path::Class qw( tempdir );
+use Path::Tiny qw( tempdir );
 use Test::Fatal;
 use Test::More;
 use Try::Tiny;
@@ -22,14 +22,14 @@ my $logger
 
     use autodie;
     use Moose;
-    use Stepford::Types qw( File );
+    use Stepford::Types qw( Path );
 
     with 'Stepford::Role::Step::FileGenerator::Atomic';
 
     has final_file => (
         traits => ['StepProduction'],
         is     => 'ro',
-        isa    => File,
+        isa    => Path,
     );
 
     sub run {
@@ -42,7 +42,7 @@ my $logger
 }
 
 {
-    my $file = $tempdir->file('final-file');
+    my $file = $tempdir->child('final-file');
     my $step = Atomic->new(
         logger     => $logger,
         final_file => $file,
@@ -57,7 +57,7 @@ my $logger
         }
     );
 
-    my $signal_file = $tempdir->file('signal');
+    my $signal_file = $tempdir->child('signal');
     if ( my $pid = $pm->start ) {
         undef $step;
         touch $signal_file;

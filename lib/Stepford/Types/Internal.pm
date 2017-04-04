@@ -5,57 +5,64 @@ use warnings;
 
 our $VERSION = '0.004002';
 
-use MooseX::Types::Common::String qw( NonEmptyStr );
-use MooseX::Types::Moose qw( ArrayRef Defined Str );
-use MooseX::Types::Path::Class qw( File );
-use Scalar::Util qw( blessed );
+use Type::Library
+    -base,
+    -declare => qw(
+    ArrayOfClassPrefixes
+    ArrayOfDependencies
+    ArrayOfFiles
+    ArrayOfSteps
+    Logger
+    PossibleClassName
+    Step
+    Graph
+    MemoryStats
+);
 
-use MooseX::Types -declare => [
-    qw(
-        ArrayOfClassPrefixes
-        ArrayOfDependencies
-        ArrayOfFiles
-        ArrayOfSteps
-        Logger
-        PossibleClassName
-        Step
-        )
-];
+use Type::Utils qw(
+    as class_type coerce declare duck_type extends from inline_as via where
+);
+use Types::Common::String qw( NonEmptyStr );
+use Types::Standard qw( Any ArrayRef Defined Str );
+use Types::Path::Tiny qw( Path );
 
 use namespace::clean;
 
-subtype PossibleClassName, as Str, inline_as {
+class_type 'Graph',       { class => 'Stepford::Graph' };
+class_type 'MemoryStats', { class => 'Memory::Stats' };
+
+declare 'PossibleClassName', as Str, inline_as {
     ## no critic (Subroutines::ProtectPrivateSubs)
     $_[0]->parent->_inline_check( $_[1] ) . ' && '
         . $_[1]
         . ' =~ /^\\p{L}\\w*(?:::\\w+)*$/';
 };
 
-subtype ArrayOfClassPrefixes, as ArrayRef [PossibleClassName], inline_as {
+declare 'ArrayOfClassPrefixes', as ArrayRef [PossibleClassName], inline_as {
     ## no critic (Subroutines::ProtectPrivateSubs)
     $_[0]->parent->_inline_check( $_[1] ) . " && \@{ $_[1] } >= 1";
 };
 
-coerce ArrayOfClassPrefixes, from PossibleClassName, via { [$_] };
+coerce 'ArrayOfClassPrefixes', from PossibleClassName, via { [$_] };
 
-subtype ArrayOfDependencies, as ArrayRef [NonEmptyStr];
+declare 'ArrayOfDependencies', as ArrayRef [NonEmptyStr];
 
-coerce ArrayOfDependencies, from NonEmptyStr, via { [$_] };
+coerce 'ArrayOfDependencies', from NonEmptyStr, via { [$_] };
 
-subtype ArrayOfFiles, as ArrayRef [File], inline_as {
+declare 'ArrayOfFiles', as ArrayRef [Path], inline_as {
     ## no critic (Subroutines::ProtectPrivateSubs)
     $_[0]->parent->_inline_check( $_[1] ) . " && \@{ $_[1] } >= 1";
 };
 
-coerce ArrayOfFiles, from File, via { [$_] };
+coerce 'ArrayOfFiles', from Path, via { [$_] };
 
-duck_type Logger, [qw( debug info notice warning error )];
+duck_type 'Logger', [qw( debug info notice warning error )];
 
-role_type Step, { role => 'Stepford::Role::Step' };
+declare 'Step', as Any, where { $_->does('Stepford::Role::Step') };
 
-subtype ArrayOfSteps, as ArrayRef [Step];
+declare 'ArrayOfSteps', as ArrayRef [Step];
 
-coerce ArrayOfSteps, from Step, via { [$_] };
+coerce 'ArrayOfSteps', from Step, via { [$_] };
 
 1;
 

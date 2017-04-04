@@ -7,10 +7,9 @@ use namespace::autoclean;
 our $VERSION = '0.004002';
 
 use Carp qw( croak );
-use File::Temp;
-use Path::Class qw( file );
+use Path::Tiny qw( path );
 use Scope::Guard qw( guard );
-use Stepford::Types qw( File );
+use Stepford::Types qw( Path );
 
 use Moose::Role;
 
@@ -18,7 +17,7 @@ with 'Stepford::Role::Step::FileGenerator';
 
 has pre_commit_file => (
     is      => 'ro',
-    isa     => File,
+    isa     => Path,
     lazy    => 1,
     builder => '_build_pre_commit_file',
 );
@@ -44,7 +43,7 @@ sub _build_pre_commit_file {
     my $final_file = ( $self->productions )[0];
     my $reader     = $final_file->get_read_method;
 
-    return file( $self->$reader . '.tmp' );
+    return path( $self->$reader . '.tmp' );
 }
 
 around run => sub {

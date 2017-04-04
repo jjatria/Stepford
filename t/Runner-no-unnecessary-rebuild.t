@@ -3,17 +3,17 @@ use strict;
 use warnings;
 
 use Log::Dispatch;
-use Path::Class qw( tempdir );
+use Path::Tiny qw( tempdir );
 use Stepford::Runner;
 use Time::HiRes qw( sleep );
 
 use Test::More;
 
 my $dir   = tempdir( CLEANUP => 1 );
-my $file1 = $dir->file('file1');
-my $file2 = $dir->file('file2');
-my $file3 = $dir->file('file3');
-my $wait  = $dir->file('wait');
+my $file1 = $dir->child('file1');
+my $file2 = $dir->child('file2');
+my $file3 = $dir->child('file3');
+my $wait  = $dir->child('wait');
 
 # How this test works:
 #
@@ -41,14 +41,14 @@ my $iteration = 1;
 
 {
     package Test::Step::Step1;
-    use Stepford::Types qw( File );
+    use Stepford::Types qw( Path );
     use Moose;
     with 'Stepford::Role::Step::FileGenerator';
 
     has file1 => (
         traits  => ['StepProduction'],
         is      => 'ro',
-        isa     => File,
+        isa     => Path,
         default => sub { $file1 },
     );
 
@@ -60,21 +60,21 @@ my $iteration = 1;
 
 {
     package Test::Step::Step2;
-    use Stepford::Types qw( File );
+    use Stepford::Types qw( Path );
     use Moose;
     with 'Stepford::Role::Step::FileGenerator';
 
     has file1 => (
         traits   => ['StepDependency'],
         is       => 'ro',
-        isa      => File,
+        isa      => Path,
         required => 1,
     );
 
     has file2 => (
         traits  => ['StepProduction'],
         is      => 'ro',
-        isa     => File,
+        isa     => Path,
         default => sub { $file2 },
     );
 
@@ -86,21 +86,21 @@ my $iteration = 1;
 
 {
     package Test::Step::Step3;
-    use Stepford::Types qw( File );
+    use Stepford::Types qw( Path );
     use Moose;
     with 'Stepford::Role::Step::FileGenerator';
 
     has file2 => (
         traits   => ['StepDependency'],
         is       => 'ro',
-        isa      => File,
+        isa      => Path,
         required => 1,
     );
 
     has file3 => (
         traits  => ['StepProduction'],
         is      => 'ro',
-        isa     => File,
+        isa     => Path,
         default => sub { $file3 },
     );
 

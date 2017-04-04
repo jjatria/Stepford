@@ -8,7 +8,7 @@ our $VERSION = '0.004002';
 
 use Carp qw( croak );
 use List::AllUtils qw( any max );
-use Stepford::Types qw( File );
+use Stepford::Types qw( Path );
 
 # Sadly, there's no (sane) way to make Path::Class::File use this
 use Time::HiRes 1.9726 qw( stat );
@@ -23,7 +23,7 @@ before BUILD => sub {
 
     my @not_files = sort map { $_->name } grep {
         !(     $_->has_type_constraint
-            && $_->type_constraint->is_a_type_of(File) )
+            && $_->type_constraint->is_a_type_of(Path) )
     } $self->productions;
 
     croak 'The '

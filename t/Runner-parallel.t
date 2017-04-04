@@ -3,14 +3,13 @@ use warnings;
 
 use lib 't/lib';
 
-use File::Temp qw( tempdir );
-use Path::Class qw( dir );
+use Path::Tiny qw( tempdir );
 use Stepford::Runner;
 use Test1::Step::CombineFiles;
 
 use Test::More;
 
-my $tempdir = dir( tempdir( CLEANUP => 1 ) );
+my $tempdir = tempdir( CLEANUP => 1 );
 
 {
     my $runner = Stepford::Runner->new(
@@ -25,7 +24,7 @@ my $tempdir = dir( tempdir( CLEANUP => 1 ) );
         },
     );
 
-    for my $file ( map { $tempdir->file($_) } qw( a1 a2 combined ) ) {
+    for my $file ( map { $tempdir->child($_) } qw( a1 a2 combined ) ) {
         ok( -f $file, $file->basename . ' file exists' );
     }
 }

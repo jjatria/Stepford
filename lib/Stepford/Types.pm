@@ -5,19 +5,15 @@ use warnings;
 
 our $VERSION = '0.004002';
 
-use MooseX::Types::Common::Numeric;
-use MooseX::Types::Moose;
-use MooseX::Types::Path::Class;
+use Type::Library -base;
+use Type::Utils qw( extends );
 
-use parent 'MooseX::Types::Combine';
-
-__PACKAGE__->provide_types_from(
-    qw(
-        MooseX::Types::Common::Numeric
-        MooseX::Types::Moose
-        MooseX::Types::Path::Class
-        Stepford::Types::Internal
-        )
+extends qw(
+    Types::Standard
+    Types::Path::Tiny
+    Types::Common::String
+    Types::Common::Numeric
+    Stepford::Types::Internal
 );
 
 1;

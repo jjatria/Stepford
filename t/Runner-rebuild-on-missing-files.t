@@ -3,18 +3,17 @@ use warnings;
 
 use lib 't/lib';
 
-use File::Temp qw( tempdir );
-use Path::Class qw( dir );
+use Path::Tiny qw( tempdir );
 use Stepford::Runner;
 
 use Test::More;
 
-my $tempdir = dir( tempdir( CLEANUP => 1 ) );
+my $tempdir = tempdir( CLEANUP => 1 );
 
 {
     _run_combine_files();
 
-    my $a1_updated_file = $tempdir->file('a1-updated');
+    my $a1_updated_file = $tempdir->child('a1-updated');
 
     $a1_updated_file->remove;
 

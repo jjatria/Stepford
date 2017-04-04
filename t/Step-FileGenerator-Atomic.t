@@ -4,7 +4,7 @@ use warnings;
 
 use Log::Dispatch;
 use Log::Dispatch::Null;
-use Path::Class qw( tempdir );
+use Path::Tiny qw( tempdir );
 
 use Test::Fatal;
 use Test::More;
@@ -17,14 +17,14 @@ my $logger
     package AtomicFileGeneratorTest::TooManyFilesStep;
 
     use Moose;
-    use Stepford::Types qw( File );
+    use Stepford::Types qw( Path );
 
     with 'Stepford::Role::Step::FileGenerator::Atomic';
 
     has [qw( a_production another_production )] => (
         traits => ['StepProduction'],
         is     => 'ro',
-        isa    => File,
+        isa    => Path,
     );
 
     sub run { }
@@ -51,16 +51,16 @@ my $logger
     package AtomicFileGeneratorTest::NoWrittenFileStep;
 
     use Moose;
-    use Path::Class qw( tempdir );
-    use Stepford::Types qw( File );
+    use Path::Tiny qw( tempdir );
+    use Stepford::Types qw( Path );
 
     with 'Stepford::Role::Step::FileGenerator::Atomic';
 
     has a_production => (
         traits  => ['StepProduction'],
         is      => 'ro',
-        isa     => File,
-        default => sub { $tempdir->file('never_written') },
+        isa     => Path,
+        default => sub { $tempdir->child('never_written') },
     );
 
     sub run { }
@@ -86,14 +86,14 @@ my $logger
     package AtomicFileGeneratorTest::TwoLineFileGenerator;
 
     use Moose;
-    use Stepford::Types qw( Bool File );
+    use Stepford::Types qw( Bool Path );
 
     with 'Stepford::Role::Step::FileGenerator::Atomic';
 
     has a_file => (
         traits => ['StepProduction'],
         is     => 'ro',
-        isa    => File,
+        isa    => Path,
     );
 
     has should_die => (
@@ -112,7 +112,7 @@ my $logger
 }
 
 {
-    my $file            = $tempdir->file('no_interruption');
+    my $file            = $tempdir->child('no_interruption');
     my $step_that_lives = AtomicFileGeneratorTest::TwoLineFileGenerator->new(
         logger     => $logger,
         should_die => 0,
@@ -142,7 +142,7 @@ my $logger
 }
 
 {
-    my $file           = $tempdir->file('interruption');
+    my $file           = $tempdir->child('interruption');
     my $step_that_dies = AtomicFileGeneratorTest::TwoLineFileGenerator->new(
         logger     => $logger,
         should_die => 1,
@@ -164,14 +164,14 @@ my $logger
     package AtomicFileGeneratorTest::PostCommitExists;
 
     use Moose;
-    use Stepford::Types qw( Bool File );
+    use Stepford::Types qw( Bool Path );
 
     with 'Stepford::Role::Step::FileGenerator::Atomic';
 
     has a_file => (
         traits => ['StepProduction'],
         is     => 'ro',
-        isa    => File,
+        isa    => Path,
     );
 
     my $x = 0;
@@ -186,7 +186,7 @@ my $logger
 }
 
 {
-    my $post_commit = $tempdir->file('post-commit-exists-is-ok');
+    my $post_commit = $tempdir->child('post-commit-exists-is-ok');
     my $step        = AtomicFileGeneratorTest::PostCommitExists->new(
         a_file => $post_commit,
         logger => $logger,
@@ -214,7 +214,7 @@ my $logger
 }
 
 {
-    my $post_commit = $tempdir->file('should-regenerate');
+    my $post_commit = $tempdir->child('should-regenerate');
     my $step        = AtomicFileGeneratorTest::PostCommitExists->new(
         a_file => $post_commit,
         logger => $logger,

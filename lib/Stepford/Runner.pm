@@ -8,14 +8,14 @@ our $VERSION = '0.004002';
 
 use List::AllUtils qw( first max );
 use Module::Pluggable::Object;
-use MooseX::Params::Validate qw( validated_list );
+use Type::Params qw( compile );
 use Parallel::ForkManager;
-use Scalar::Util qw( blessed );
 use Stepford::Error;
 use Stepford::GraphBuilder;
 use Stepford::Types qw(
-    ArrayOfClassPrefixes ArrayOfSteps Bool ClassName
-    HashRef Logger Maybe PositiveInt Step
+    ArrayOfClassPrefixes ArrayOfSteps Bool ClassName Dict
+    HashRef Logger Maybe PositiveInt Step MemoryStats Undef
+    slurpy
 );
 use Try::Tiny;
 
@@ -49,7 +49,7 @@ has jobs => (
 
 has _memory_stats => (
     is      => 'ro',
-    isa     => Maybe ['Memory::Stats'],
+    isa     => Maybe [MemoryStats],
     default => sub {
         return try {
             require Memory::Stats;
@@ -83,30 +83,27 @@ sub BUILD {
 
 sub run {
     my $self = shift;
-    my ( $final_steps, $config, $force_step_execution ) = validated_list(
-        \@_,
-        final_steps => {
-            isa    => ArrayOfSteps,
-            coerce => 1,
-        },
-        config => {
-            isa     => HashRef,
-            default => {},
-        },
-        force_step_execution => {
-            isa     => Bool,
-            default => 0,
-        }
-    );
 
-    my $root_graph
-        = $self->_make_root_graph_builder( $final_steps, $config )->graph;
+    require v5.10.0;
+    state $check = compile(
+        slurpy Dict [
+            final_steps => ArrayOfSteps,
+            config      => HashRef->plus_coercions( Undef, sub { {} } ),
+            force_step_execution => Bool->plus_coercions( Undef, sub { 0 } ),
+        ]
+    );
+    my ($arg) = $check->(@_);
+
+    my $root_graph = $self->_make_root_graph_builder(
+        $arg->{final_steps},
+        $arg->{config}
+    )->graph;
 
     if ( $self->jobs > 1 ) {
-        $self->_run_parallel( $root_graph, $force_step_execution );
+        $self->_run_parallel( $root_graph, $arg->{force_step_execution} );
     }
     else {
-        $self->_run_sequential( $root_graph, $force_step_execution );
+        $self->_run_sequential( $root_graph, $arg->{force_step_execution} );
     }
 
     return;
